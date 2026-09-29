@@ -607,7 +607,10 @@ document.getElementById('filterReset').addEventListener('click', () => {
 
 populateMuniOptions();
 renderAll();
-map.fitBounds(L.latLngBounds(listings.map(l => [l.lat, l.lon])), {padding: [30, 30]});
+setTimeout(() => {
+  map.invalidateSize();
+  map.fitBounds(L.latLngBounds(listings.map(l => [l.lat, l.lon])), {padding: [30, 30], maxZoom: 11});
+}, 0);
 </script>
 </body>
 </html>
