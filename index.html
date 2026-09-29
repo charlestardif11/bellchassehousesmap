@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propriétés à vendre — Bellechasse</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --blue: #0060a9;
+    --blue-dark: #004a85;
+    --bg: #f2f4f6;
+    --panel: #ffffff;
+    --ink: #1c2733;
+    --muted: #5b6673;
+    --line: #dfe3e8;
+    --heart: #e0245e;
+    --centris: #0060a9;
+    --duproprio: #d97706;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(20,30,40,0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    padding: 0;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: -0.01em;
+  }
+  .logo span { color: var(--ink); font-weight: 400; font-size: 0.95rem; margin-left: 6px; }
+  .resultbar {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .resultbar strong { color: var(--ink); }
+  .legend { display: flex; gap: 14px; font-size: 0.78rem; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .layout { display: flex; height: calc(100vh - 108px); min-height: 520px; }
+  .list {
+    flex: 1;
+    min-width: 340px;
+    max-width: 460px;
+    overflow-y: auto;
+    background: var(--bg);
+    padding: 14px;
+  }
+  #map { flex: 1.4; min-width: 0; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .card:hover, .card.highlight { border-color: var(--blue); box-shadow: 0 2px 10px rgba(0,96,169,0.18); }
+  .card-photo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #dde2e7;
+    overflow: hidden;
+  }
+  .card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-photo .noimg {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 0.72rem; text-align: center; padding: 10px;
+  }
+  .src-tag {
+    position: absolute; top: 8px; left: 8px;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px; color: #fff;
+  }
+  .src-tag.centris { background: var(--centris); }
+  .src-tag.duproprio { background: var(--duproprio); }
+  .heart {
+    position: absolute; top: 8px; right: 8px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; color: var(--heart);
+  }
+  .card-body { padding: 12px 14px 14px; }
+  .price { font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+  .addr { font-size: 0.85rem; color: var(--ink); margin: 4px 0 2px; font-weight: 500; }
+  .muni { font-size: 0.8rem; color: var(--muted); margin: 0 0 8px; }
+  .stats { display: flex; gap: 14px; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+  .stats span { display: flex; align-items: center; gap: 5px; }
+  .card-cta {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .card-cta:hover { background: var(--blue-dark); }
+  .leaflet-popup-content-wrapper { border-radius: 8px; }
+  .popup-card { width: 200px; font-family: inherit; }
+  .popup-card img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px 6px 0 0; display: block; }
+  .popup-card .pcbody { padding: 8px 2px 2px; }
+  .popup-card .price { font-size: 1rem; }
+  .popup-card .muni { margin-bottom: 6px; }
+  .popup-card a { color: var(--blue); font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+  .notice {
+    margin: 0 24px 12px;
+    padding: 9px 13px;
+    background: #fff7e6;
+    border: 1px solid #f2d391;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    color: var(--ink);
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="logo">Bellechasse<span>— propriétés à vendre</span></div>
+  </div>
+  <div class="resultbar">
+    <div><strong id="resultCount">12</strong> propriétés trouvées — MRC de Bellechasse</div>
+    <div class="legend">
+      <span><i style="background:var(--centris)"></i>Centris</span>
+      <span><i style="background:var(--duproprio)"></i>DuProprio</span>
+    </div>
+  </div>
+  <div class="notice">
+    Échantillon compilé à la main (pas de scraping automatisé — voir les conditions d'utilisation de Centris/DuProprio). Actualisé sur demande. Si la carte reste vide dans l'aperçu de la conversation, télécharge le fichier et ouvre-le dans Chrome/Edge/Firefox : les tuiles OpenStreetMap et les photos se chargent normalement dans un vrai navigateur.
+  </div>
+</header>
+<div class="layout">
+  <div class="list" id="list"></div>
+  <div id="map"></div>
+</div>
+
+<script>
+const listings = [
+  {id:1, muni:"Saint-Charles-de-Bellechasse", addr:"1064, Chemin du Lac-Beaumont", price:269000, beds:2, source:"Centris", lat:46.7452, lon:-70.9958, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA4B7FC9DDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/13658854"},
+  {id:2, muni:"Saint-Charles-de-Bellechasse", addr:"1060, Chemin du Lac-Beaumont", price:229000, beds:3, source:"Centris", lat:46.7456, lon:-70.9962, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA46F4E8DDDDDDDDDDA&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/16653070"},
+  {id:3, muni:"Saint-Charles-de-Bellechasse", addr:"1513, Chemin du Lac-Saint-Charles", price:249900, beds:2, source:"Centris", lat:46.7448, lon:-70.9950, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA275888DDDDDDDDDD2&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/23831751"},
+  {id:4, muni:"Saint-Charles-de-Bellechasse", addr:"1355, Chemin du Lac-Saint-Charles (chalet)", price:150000, beds:2, source:"Centris", lat:46.7440, lon:-70.9945, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA28CF08DDDDDDDDDDA&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/chalet~a-vendre~saint-charles-de-bellechasse/18585664"},
+  {id:5, muni:"Saint-Michel-de-Bellechasse", addr:"6, Rue de l'Ancrage", price:1799000, beds:null, source:"Centris", lat:46.8894, lon:-70.7935, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DE643A45DDDDDDDDDD1&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/12712182"},
+  {id:6, muni:"Saint-Michel-de-Bellechasse", addr:"5, Chemin du Hauban", price:585000, beds:null, source:"Centris", lat:46.8888, lon:-70.7928, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA292EB2DDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/24889309"},
+  {id:7, muni:"Saint-Michel-de-Bellechasse", addr:"5, Rue du Cabestan", price:844000, beds:null, source:"Centris", lat:46.8899, lon:-70.7940, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA41283BDDDDDDDDDDD&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/11540729"},
+  {id:8, muni:"Saint-Michel-de-Bellechasse", addr:"22, Chemin de l'Étambot", price:325000, beds:null, source:"Centris", lat:46.8901, lon:-70.7920, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA2F098ADDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/17010939"},
+  {id:9, muni:"Saint-Philémon", addr:"1359, Rang Saint-Isidore", price:439000, beds:2, source:"Centris", lat:46.6975, lon:-70.4574, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DADBEB2ADDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/cottages~for-sale~saint-philemon/19609426"},
+  {id:10, muni:"Saint-Lazare-de-Bellechasse", addr:"119-121, Rue du Menuisier", price:273000, beds:3, source:"DuProprio", lat:46.6800, lon:-70.6220, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/jumele-a-vendre/hab-119-121-rue-du-menuisier-1132682"},
+  {id:11, muni:"Saint-Lazare-de-Bellechasse", addr:"101, Rue du Menuiser", price:334000, beds:3, source:"DuProprio", lat:46.6795, lon:-70.6210, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/bungalow-a-vendre/hab-101-rue-du-menuiser-1136258"},
+  {id:12, muni:"Saint-Lazare-de-Bellechasse", addr:"107, Rue du Menuiser", price:292000, beds:3, source:"DuProprio", lat:46.6805, lon:-70.6215, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/jumele-a-vendre/hab-107-rue-du-menuiser-1136256"},
+];
+
+function fmtPrice(p) {
+  return p.toLocaleString('fr-CA', {style:'currency', currency:'CAD', maximumFractionDigits:0});
+}
+
+const map = L.map('map', {zoomControl: true}).setView([46.78, -70.75], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  referrerPolicy: 'origin',
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+let markers = {};
+
+function badgeClass(source) { return source === "Centris" ? "centris" : "duproprio"; }
+
+function renderList() {
+  const listEl = document.getElementById('list');
+  listEl.innerHTML = '';
+  listings.forEach(l => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = 'card-' + l.id;
+    card.onclick = () => {
+      map.flyTo([l.lat, l.lon], 14, {duration: 0.6});
+      markers[l.id].openPopup();
+    };
+    const iconClass = badgeClass(l.source);
+    const photoHtml = l.photo
+      ? `<img src="${l.photo}" alt="Photo de la propriété" loading="lazy">`
+      : `<div class="noimg">Photo non disponible sur cette source — voir l'annonce</div>`;
+    card.innerHTML = `
+      <div class="card-photo">
+        ${photoHtml}
+        <span class="src-tag ${iconClass}">${l.source}</span>
+        <span class="heart">♥</span>
+      </div>
+      <div class="card-body">
+        <div class="price">${fmtPrice(l.price)}</div>
+        <div class="addr">${l.addr}</div>
+        <div class="muni">${l.muni}</div>
+        <div class="stats">
+          ${l.beds ? `<span>🛏 ${l.beds} ch.</span>` : `<span>—</span>`}
+        </div>
+        <a class="card-cta" href="${l.link}" target="_blank" rel="noopener">Voir l'annonce et les photos</a>
+      </div>
+    `;
+    listEl.appendChild(card);
+  });
+}
+
+function renderMarkers() {
+  listings.forEach(l => {
+    const color = l.source === "Centris" ? "#0060a9" : "#d97706";
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+      iconSize: [18,18],
+      iconAnchor: [9,9]
+    });
+    const marker = L.marker([l.lat, l.lon], {icon}).addTo(map);
+    const photoHtml = l.photo ? `<img src="${l.photo}" alt="">` : '';
+    marker.bindPopup(`
+      <div class="popup-card">
+        ${photoHtml}
+        <div class="pcbody">
+          <div class="price">${fmtPrice(l.price)}</div>
+          <div class="muni">${l.addr}, ${l.muni}</div>
+          <a href="${l.link}" target="_blank" rel="noopener">Voir l'annonce (${l.source}) ↗</a>
+        </div>
+      </div>
+    `);
+    marker.on('click', () => {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('highlight'));
+      const cardEl = document.getElementById('card-' + l.id);
+      if (cardEl) { cardEl.classList.add('highlight'); cardEl.scrollIntoView({behavior:'smooth', block:'center'}); }
+    });
+    markers[l.id] = marker;
+  });
+}
+
+document.getElementById('resultCount').textContent = listings.length;
+renderMarkers();
+renderList();
+</script>
+</body>
+</html>
