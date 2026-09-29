@@ -48,7 +48,7 @@
   }
   .logo span { color: var(--ink); font-weight: 400; font-size: 0.95rem; margin-left: 6px; }
   .resultbar {
-    padding: 12px 24px;
+    padding: 12px 24px 0;
     font-size: 0.9rem;
     color: var(--muted);
     display: flex;
@@ -61,7 +61,40 @@
   .legend { display: flex; gap: 14px; font-size: 0.78rem; }
   .legend span { display: inline-flex; align-items: center; gap: 5px; }
   .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-  .layout { display: flex; height: calc(100vh - 108px); min-height: 520px; }
+
+  .filterbar {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 10px 24px;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: 4px; }
+  .filter-field label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; }
+  .filter-field .range-inputs { display: flex; align-items: center; gap: 6px; }
+  .filter-field input[type="number"] {
+    width: 92px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 0.82rem; color: var(--ink); background: var(--panel);
+  }
+  .filter-field select {
+    padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 0.82rem; color: var(--ink); background: var(--panel); max-width: 220px;
+  }
+  .filter-liked-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .filter-liked-btn .hi { color: var(--muted); }
+  .filter-liked-btn.active { background: var(--heart); border-color: var(--heart); color: #fff; }
+  .filter-liked-btn.active .hi { color: #fff; }
+  .filter-reset {
+    padding: 7px 10px; font-size: 0.78rem; color: var(--blue); background: none; border: none;
+    cursor: pointer; text-decoration: underline;
+  }
+
+  .layout { display: flex; height: calc(100vh - 158px); min-height: 480px; }
   .list {
     flex: 1;
     min-width: 340px;
@@ -70,6 +103,7 @@
     background: var(--bg);
     padding: 14px;
   }
+  .empty-msg { padding: 30px 14px; text-align: center; color: var(--muted); font-size: 0.85rem; }
   #map { flex: 1.4; min-width: 0; }
   .card {
     background: var(--panel);
@@ -104,17 +138,22 @@
   .src-tag.duproprio { background: var(--duproprio); }
   .heart {
     position: absolute; top: 8px; right: 8px;
-    width: 26px; height: 26px; border-radius: 50%;
-    background: rgba(255,255,255,0.9);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.92);
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.85rem; color: var(--heart);
+    font-size: 0.95rem; color: #b6bcc4;
+    border: none; cursor: pointer; transition: color 0.15s, transform 0.1s;
   }
+  .heart:hover { transform: scale(1.08); }
+  .heart.liked { color: var(--heart); }
   .card-body { padding: 12px 14px 14px; }
   .price { font-size: 1.15rem; font-weight: 700; color: var(--ink); }
   .addr { font-size: 0.85rem; color: var(--ink); margin: 4px 0 2px; font-weight: 500; }
-  .muni { font-size: 0.8rem; color: var(--muted); margin: 0 0 8px; }
-  .stats { display: flex; gap: 14px; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+  .muni { font-size: 0.8rem; color: var(--muted); margin: 0 0 6px; }
+  .specs { font-size: 0.76rem; color: var(--muted); margin: 0 0 8px; line-height: 1.4; }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
   .stats span { display: flex; align-items: center; gap: 5px; }
+  .taxes { font-size: 0.76rem; color: var(--muted); margin-top: 6px; }
   .card-cta {
     display: block;
     text-align: center;
@@ -129,11 +168,12 @@
   }
   .card-cta:hover { background: var(--blue-dark); }
   .leaflet-popup-content-wrapper { border-radius: 8px; }
-  .popup-card { width: 200px; font-family: inherit; }
+  .popup-card { width: 210px; font-family: inherit; }
   .popup-card img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px 6px 0 0; display: block; }
   .popup-card .pcbody { padding: 8px 2px 2px; }
   .popup-card .price { font-size: 1rem; }
-  .popup-card .muni { margin-bottom: 6px; }
+  .popup-card .muni { margin-bottom: 4px; }
+  .popup-card .specs { margin-bottom: 6px; }
   .popup-card a { color: var(--blue); font-size: 0.78rem; font-weight: 600; text-decoration: none; }
   .notice {
     margin: 0 24px 12px;
@@ -152,11 +192,39 @@
     <div class="logo">Bellechasse<span>— propriétés à vendre</span></div>
   </div>
   <div class="resultbar">
-    <div><strong id="resultCount">12</strong> propriétés trouvées — MRC de Bellechasse</div>
+    <div><strong id="resultCount">11</strong> propriétés affichées — MRC de Bellechasse</div>
     <div class="legend">
       <span><i style="background:var(--centris)"></i>Centris</span>
       <span><i style="background:var(--duproprio)"></i>DuProprio</span>
     </div>
+  </div>
+  <div class="filterbar">
+    <div class="filter-field">
+      <label>Budget ($)</label>
+      <div class="range-inputs">
+        <input type="number" id="priceMin" placeholder="Min" step="10000">
+        <span>–</span>
+        <input type="number" id="priceMax" placeholder="Max" step="10000">
+      </div>
+    </div>
+    <div class="filter-field">
+      <label>Chambres</label>
+      <select id="filterBeds">
+        <option value="0">Toutes</option>
+        <option value="1">1+</option>
+        <option value="2">2+</option>
+        <option value="3">3+</option>
+        <option value="4">4+</option>
+      </select>
+    </div>
+    <div class="filter-field">
+      <label>Municipalité</label>
+      <select id="filterMuni">
+        <option value="">Toutes</option>
+      </select>
+    </div>
+    <button class="filter-liked-btn" id="filterLikedBtn"><span class="hi">♥</span> Favoris seulement</button>
+    <button class="filter-reset" id="filterReset">Réinitialiser les filtres</button>
   </div>
   <div class="notice">
     Échantillon compilé à la main (pas de scraping automatisé — voir les conditions d'utilisation de Centris/DuProprio). Actualisé sur demande.
@@ -169,22 +237,58 @@
 
 <script>
 const listings = [
-  {id:1, muni:"Saint-Charles-de-Bellechasse", addr:"1064, Chemin du Lac-Beaumont", price:269000, beds:2, source:"Centris", lat:46.7452, lon:-70.9958, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA4B7FC9DDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/13658854"},
-  {id:2, muni:"Saint-Charles-de-Bellechasse", addr:"1060, Chemin du Lac-Beaumont", price:229000, beds:3, source:"Centris", lat:46.7456, lon:-70.9962, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA46F4E8DDDDDDDDDDA&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/16653070"},
-  {id:3, muni:"Saint-Charles-de-Bellechasse", addr:"1513, Chemin du Lac-Saint-Charles", price:249900, beds:2, source:"Centris", lat:46.7448, lon:-70.9950, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA275888DDDDDDDDDD2&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/23831751"},
-  {id:4, muni:"Saint-Charles-de-Bellechasse", addr:"1355, Chemin du Lac-Saint-Charles (chalet)", price:150000, beds:2, source:"Centris", lat:46.7440, lon:-70.9945, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA28CF08DDDDDDDDDDA&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/chalet~a-vendre~saint-charles-de-bellechasse/18585664"},
-  {id:5, muni:"Saint-Michel-de-Bellechasse", addr:"6, Rue de l'Ancrage", price:1799000, beds:null, source:"Centris", lat:46.8894, lon:-70.7935, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DE643A45DDDDDDDDDD1&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/12712182"},
-  {id:6, muni:"Saint-Michel-de-Bellechasse", addr:"5, Chemin du Hauban", price:585000, beds:null, source:"Centris", lat:46.8888, lon:-70.7928, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA292EB2DDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/24889309"},
-  {id:7, muni:"Saint-Michel-de-Bellechasse", addr:"5, Rue du Cabestan", price:844000, beds:null, source:"Centris", lat:46.8899, lon:-70.7940, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA41283BDDDDDDDDDDD&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/11540729"},
-  {id:8, muni:"Saint-Michel-de-Bellechasse", addr:"22, Chemin de l'Étambot", price:325000, beds:null, source:"Centris", lat:46.8901, lon:-70.7920, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA2F098ADDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/17010939"},
-  {id:9, muni:"Saint-Philémon", addr:"1359, Rang Saint-Isidore", price:439000, beds:2, source:"Centris", lat:46.6975, lon:-70.4574, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DADBEB2ADDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/cottages~for-sale~saint-philemon/19609426"},
-  {id:10, muni:"Saint-Lazare-de-Bellechasse", addr:"119-121, Rue du Menuisier", price:273000, beds:3, source:"DuProprio", lat:46.6800, lon:-70.6220, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/jumele-a-vendre/hab-119-121-rue-du-menuisier-1132682"},
-  {id:11, muni:"Saint-Lazare-de-Bellechasse", addr:"101, Rue du Menuiser", price:334000, beds:3, source:"DuProprio", lat:46.6795, lon:-70.6210, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/bungalow-a-vendre/hab-101-rue-du-menuiser-1136258"},
-  {id:12, muni:"Saint-Lazare-de-Bellechasse", addr:"107, Rue du Menuiser", price:292000, beds:3, source:"DuProprio", lat:46.6805, lon:-70.6215, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/jumele-a-vendre/hab-107-rue-du-menuiser-1136256"},
+  {id:1, muni:"Saint-Charles-de-Bellechasse", addr:"1064, Chemin du Lac-Beaumont", price:269000, beds:2, baths:1, year:1970, living:null, lot:26688, type:"Chalet 1½ étage, détaché", parking:"Allée (2 places)", taxes:1627, source:"Centris", lat:46.7452, lon:-70.9958, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA4B7FC9DDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/13658854"},
+  {id:2, muni:"Saint-Charles-de-Bellechasse", addr:"1060, Chemin du Lac-Beaumont", price:229000, beds:3, baths:1, year:1972, living:null, lot:27692, type:"Chalet 3 saisons, plain-pied", parking:"Allée (4 places)", taxes:1496, source:"Centris", lat:46.7456, lon:-70.9962, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA46F4E8DDDDDDDDDDA&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/16653070"},
+  {id:3, muni:"Saint-Charles-de-Bellechasse", addr:"1513, Chemin du Lac-Saint-Charles", price:249900, beds:2, baths:1, year:1980, living:null, lot:25250, type:"Chalet rénové, à étages", parking:"Allée (4) + garage (1)", taxes:2095, source:"Centris", lat:46.7448, lon:-70.9950, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA275888DDDDDDDDDD2&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-charles-de-bellechasse/23831751"},
+  {id:4, muni:"Saint-Charles-de-Bellechasse", addr:"1355, Chemin du Lac-Saint-Charles (chalet)", price:150000, beds:2, baths:1, year:1950, living:null, lot:10693, type:"Chalet, plain-pied", parking:"Allée (4 places)", taxes:2212, source:"Centris", lat:46.7440, lon:-70.9945, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA28CF08DDDDDDDDDDA&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/chalet~a-vendre~saint-charles-de-bellechasse/18585664"},
+  {id:5, muni:"Saint-Michel-de-Bellechasse", addr:"6, Rue de l'Ancrage", price:1799000, beds:3, baths:"2 + salle d'eau", year:1992, living:null, lot:null, type:"À étages, détaché", parking:"Allée (6) + garage (2)", taxes:8447, source:"Centris", lat:46.8894, lon:-70.7935, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DE643A45DDDDDDDDDD1&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/12712182"},
+  {id:6, muni:"Saint-Michel-de-Bellechasse", addr:"5, Chemin du Hauban", price:585000, beds:2, baths:1, year:2018, living:null, lot:20404, type:"Plain-pied, détaché", parking:"Allée (4 places)", taxes:2453, source:"Centris", lat:46.8888, lon:-70.7928, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA292EB2DDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/24889309"},
+  {id:7, muni:"Saint-Michel-de-Bellechasse", addr:"5, Rue du Cabestan", price:844000, beds:4, baths:2, year:2010, living:null, lot:16162, type:"Plain-pied, détaché", parking:"Allée (7) + garage (1)", taxes:4759, source:"Centris", lat:46.8899, lon:-70.7940, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA41283BDDDDDDDDDDD&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/11540729"},
+  {id:8, muni:"Saint-Michel-de-Bellechasse", addr:"22, Chemin de l'Étambot", price:325000, beds:3, baths:1, year:1964, living:960, lot:15407, type:"Chalet 3 saisons, plain-pied", parking:"Allée (2 places)", taxes:1338, source:"Centris", lat:46.8901, lon:-70.7920, photo:"https://mspublic.centris.ca/media.ashx?id=ADDD250DA2F098ADDDDDDDDDDF&t=pi&w=480&h=360&sm=c", link:"https://www.centris.ca/fr/maison~a-vendre~saint-michel-de-bellechasse/17010939"},
+  {id:10, muni:"Saint-Lazare-de-Bellechasse", addr:"119-121, Rue du Menuisier", price:273000, beds:3, baths:2, year:"Neuf (à construire)", living:810, lot:3694, type:"Jumelé", parking:"2 places extérieures", taxes:null, source:"DuProprio", lat:46.6800, lon:-70.6220, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/jumele-a-vendre/hab-119-121-rue-du-menuisier-1132682"},
+  {id:11, muni:"Saint-Lazare-de-Bellechasse", addr:"101, Rue du Menuiser", price:334000, beds:3, baths:2, year:"En construction (2026-2027)", living:864, lot:7200, type:"Bungalow (construction neuve)", parking:"2 places extérieures", taxes:null, source:"DuProprio", lat:46.6795, lon:-70.6210, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/bungalow-a-vendre/hab-101-rue-du-menuiser-1136258"},
+  {id:12, muni:"Saint-Lazare-de-Bellechasse", addr:"107, Rue du Menuiser", price:292000, beds:3, baths:2, year:"En construction (2026)", living:1656, lot:3700, type:"Jumelé (construction neuve)", parking:"2 places extérieures, double largeur", taxes:null, source:"DuProprio", lat:46.6805, lon:-70.6215, photo:null, link:"https://duproprio.com/fr/chaudiere-appalaches/st-lazare-de-bellechasse/jumele-a-vendre/hab-107-rue-du-menuiser-1136256"},
 ];
+
+// --- Favoris (localStorage) ---
+const LIKES_KEY = 'bellechasse_likes';
+function getLikes() {
+  try { return new Set(JSON.parse(localStorage.getItem(LIKES_KEY)) || []); }
+  catch (e) { return new Set(); }
+}
+function saveLikes(set) {
+  try { localStorage.setItem(LIKES_KEY, JSON.stringify(Array.from(set))); }
+  catch (e) { /* stockage indisponible, on continue sans persister */ }
+}
+let likes = getLikes();
+
+// --- Filtres ---
+const filters = { min: null, max: null, beds: 0, muni: '', likedOnly: false };
 
 function fmtPrice(p) {
   return p.toLocaleString('fr-CA', {style:'currency', currency:'CAD', maximumFractionDigits:0});
+}
+function fmtNum(n) { return n.toLocaleString('fr-CA'); }
+function badgeClass(source) { return source === "Centris" ? "centris" : "duproprio"; }
+
+function specsLine(l) {
+  const parts = [];
+  parts.push(typeof l.year === 'number' ? `Construit en ${l.year}` : l.year);
+  if (l.type) parts.push(l.type);
+  if (l.living) parts.push(`${fmtNum(l.living)} pc habitables`);
+  if (l.lot) parts.push(`Terrain ${fmtNum(l.lot)} pc`);
+  return parts.join(' · ');
+}
+
+function applyFilters(list) {
+  return list.filter(l => {
+    if (filters.min != null && l.price < filters.min) return false;
+    if (filters.max != null && l.price > filters.max) return false;
+    if (filters.beds > 0 && (l.beds || 0) < filters.beds) return false;
+    if (filters.muni && l.muni !== filters.muni) return false;
+    if (filters.likedOnly && !likes.has(l.id)) return false;
+    return true;
+  });
 }
 
 const map = L.map('map', {zoomControl: true}).setView([46.78, -70.75], 10);
@@ -195,46 +299,66 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 let markers = {};
+const markerLayer = L.layerGroup().addTo(map);
 
-function badgeClass(source) { return source === "Centris" ? "centris" : "duproprio"; }
+function heartClickHandler(id) {
+  return (e) => {
+    e.stopPropagation();
+    if (likes.has(id)) likes.delete(id); else likes.add(id);
+    saveLikes(likes);
+    renderAll();
+  };
+}
 
-function renderList() {
+function renderList(filtered) {
   const listEl = document.getElementById('list');
   listEl.innerHTML = '';
-  listings.forEach(l => {
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="empty-msg">Aucune propriété ne correspond à ces filtres.</div>';
+    return;
+  }
+  filtered.forEach(l => {
     const card = document.createElement('div');
     card.className = 'card';
     card.id = 'card-' + l.id;
     card.onclick = () => {
       map.flyTo([l.lat, l.lon], 14, {duration: 0.6});
-      markers[l.id].openPopup();
+      if (markers[l.id]) markers[l.id].openPopup();
     };
     const iconClass = badgeClass(l.source);
     const photoHtml = l.photo
       ? `<img src="${l.photo}" alt="Photo de la propriété" loading="lazy">`
       : `<div class="noimg">Photo non disponible sur cette source — voir l'annonce</div>`;
+    const liked = likes.has(l.id);
     card.innerHTML = `
       <div class="card-photo">
         ${photoHtml}
         <span class="src-tag ${iconClass}">${l.source}</span>
-        <span class="heart">♥</span>
+        <button class="heart ${liked ? 'liked' : ''}" data-id="${l.id}" aria-label="Ajouter aux favoris">${liked ? '♥' : '♡'}</button>
       </div>
       <div class="card-body">
         <div class="price">${fmtPrice(l.price)}</div>
         <div class="addr">${l.addr}</div>
         <div class="muni">${l.muni}</div>
+        <div class="specs">${specsLine(l)}</div>
         <div class="stats">
-          ${l.beds ? `<span>🛏 ${l.beds} ch.</span>` : `<span>—</span>`}
+          ${l.beds ? `<span>🛏 ${l.beds} ch.</span>` : ''}
+          ${l.baths ? `<span>🛁 ${l.baths} sdb</span>` : ''}
+          ${l.parking ? `<span>🅿️ ${l.parking}</span>` : ''}
         </div>
+        ${l.taxes ? `<div class="taxes">Taxes municipales + scolaires : ${fmtPrice(l.taxes)}/an</div>` : ''}
         <a class="card-cta" href="${l.link}" target="_blank" rel="noopener">Voir l'annonce et les photos</a>
       </div>
     `;
     listEl.appendChild(card);
+    card.querySelector('.heart').addEventListener('click', heartClickHandler(l.id));
   });
 }
 
-function renderMarkers() {
-  listings.forEach(l => {
+function renderMarkers(filtered) {
+  markerLayer.clearLayers();
+  markers = {};
+  filtered.forEach(l => {
     const color = l.source === "Centris" ? "#0060a9" : "#d97706";
     const icon = L.divIcon({
       className: '',
@@ -242,7 +366,7 @@ function renderMarkers() {
       iconSize: [18,18],
       iconAnchor: [9,9]
     });
-    const marker = L.marker([l.lat, l.lon], {icon}).addTo(map);
+    const marker = L.marker([l.lat, l.lon], {icon});
     const photoHtml = l.photo ? `<img src="${l.photo}" alt="">` : '';
     marker.bindPopup(`
       <div class="popup-card">
@@ -250,6 +374,7 @@ function renderMarkers() {
         <div class="pcbody">
           <div class="price">${fmtPrice(l.price)}</div>
           <div class="muni">${l.addr}, ${l.muni}</div>
+          <div class="specs">${specsLine(l)}</div>
           <a href="${l.link}" target="_blank" rel="noopener">Voir l'annonce (${l.source}) ↗</a>
         </div>
       </div>
@@ -259,13 +384,62 @@ function renderMarkers() {
       const cardEl = document.getElementById('card-' + l.id);
       if (cardEl) { cardEl.classList.add('highlight'); cardEl.scrollIntoView({behavior:'smooth', block:'center'}); }
     });
+    marker.addTo(markerLayer);
     markers[l.id] = marker;
   });
 }
 
-document.getElementById('resultCount').textContent = listings.length;
-renderMarkers();
-renderList();
+function populateMuniOptions() {
+  const sel = document.getElementById('filterMuni');
+  const munis = Array.from(new Set(listings.map(l => l.muni))).sort();
+  munis.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    sel.appendChild(opt);
+  });
+}
+
+function renderAll() {
+  const filtered = applyFilters(listings);
+  document.getElementById('resultCount').textContent = filtered.length;
+  renderList(filtered);
+  renderMarkers(filtered);
+}
+
+document.getElementById('priceMin').addEventListener('input', (e) => {
+  filters.min = e.target.value ? Number(e.target.value) : null;
+  renderAll();
+});
+document.getElementById('priceMax').addEventListener('input', (e) => {
+  filters.max = e.target.value ? Number(e.target.value) : null;
+  renderAll();
+});
+document.getElementById('filterBeds').addEventListener('change', (e) => {
+  filters.beds = Number(e.target.value);
+  renderAll();
+});
+document.getElementById('filterMuni').addEventListener('change', (e) => {
+  filters.muni = e.target.value;
+  renderAll();
+});
+document.getElementById('filterLikedBtn').addEventListener('click', (e) => {
+  filters.likedOnly = !filters.likedOnly;
+  e.currentTarget.classList.toggle('active', filters.likedOnly);
+  renderAll();
+});
+document.getElementById('filterReset').addEventListener('click', () => {
+  filters.min = null; filters.max = null; filters.beds = 0; filters.muni = ''; filters.likedOnly = false;
+  document.getElementById('priceMin').value = '';
+  document.getElementById('priceMax').value = '';
+  document.getElementById('filterBeds').value = '0';
+  document.getElementById('filterMuni').value = '';
+  document.getElementById('filterLikedBtn').classList.remove('active');
+  renderAll();
+});
+
+populateMuniOptions();
+renderAll();
 </script>
 </body>
 </html>
